@@ -1,70 +1,105 @@
 # agents/crawler.py
 import re
 import requests
+import trafilatura
 from bs4 import BeautifulSoup
-from typing import TypedDict, List, Dict, Optional, Any
-from config.settings import USER_AGENT, WEBSITE_SELECTORS
+from typing import Dict, Any
+from config.settings import USER_AGENT
 from agents import NewsProcessingState
+
+def remove_duplicated_content(text):
+    """Xóa triệt để các câu và đoạn văn trùng lặp trong nội dung"""
+    if not text:
+        return ""
+    
+    # Chia thành các đoạn
+    paragraphs = text.split('\n\n')
+    
+    # Phương pháp 1: Loại bỏ các đoạn hoàn toàn giống nhau
+    unique_paragraphs = []
+    seen_paragraphs = set()
+    
+    for paragraph in paragraphs:
+        paragraph_stripped = paragraph.strip()
+        if paragraph_stripped and paragraph_stripped not in seen_paragraphs:
+            unique_paragraphs.append(paragraph)
+            seen_paragraphs.add(paragraph_stripped)
+    
+    # Phương pháp 2: Kiểm tra và loại bỏ các đoạn giống nhau 
+    # ngay cả khi chúng nằm ở vị trí khác nhau trong văn bản
+    result_paragraphs = []
+    processed_content = ""
+    
+    for paragraph in unique_paragraphs:
+        # Chia thành các câu để xử lý chi tiết hơn
+        sentences = re.split(r'(?<=[.!?])\s+', paragraph)
+        unique_sentences = []
+        
+        for sentence in sentences:
+            sentence = sentence.strip()
+            # Chỉ thêm câu nếu nó chưa tồn tại trong nội dung đã xử lý
+            # và có độ dài đủ để là một câu có ý nghĩa
+            if (sentence and len(sentence) > 10 and 
+                sentence not in processed_content and 
+                not any(sentence in p for p in result_paragraphs)):
+                unique_sentences.append(sentence)
+                processed_content += sentence + " "
+        
+        # Nếu đoạn vẫn còn câu sau khi lọc
+        if unique_sentences:
+            result_paragraph = " ".join(unique_sentences)
+            result_paragraphs.append(result_paragraph)
+    
+    # Ghép lại thành văn bản
+    return '\n\n'.join(result_paragraphs)
 
 def crawler_agent(state: NewsProcessingState) -> Dict[str, Any]:
     """Agent chịu trách nhiệm crawl nội dung bài báo"""
     current_url = state["current_url"]
     
     try:
+        # Kiểm tra nếu là URL video, bỏ qua
+        if "video" in current_url or "/video/" in current_url:
+            return {"errors": state["errors"] + [f"Bỏ qua URL video: {current_url}"], "status": "error", "next": "coordinator"}
+        
+        # Tải nội dung trang
         headers = {'User-Agent': USER_AGENT}
-        response = requests.get(current_url, headers=headers)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        response = requests.get(current_url, headers=headers, timeout=30)
+        html_content = response.text
         
-        # Xác định logic trích xuất nội dung dựa trên domain
-        domain = re.search(r'https?://(?:www\.)?([^/]+)', current_url).group(1)
+        # Phương pháp 1: Sử dụng Trafilatura
+        content = trafilatura.extract(
+            html_content, 
+            include_comments=False, 
+            include_tables=True,
+            include_images=False, 
+            include_links=False,
+            favor_precision=True
+        )
         
-        # Sử dụng selectors từ cấu hình
-        domain_key = next((k for k in WEBSITE_SELECTORS.keys() if k in domain), None)
+        if content and len(content) > 200:
+            # Loại bỏ các đoạn trùng lặp
+            content = remove_duplicated_content(content)
+            print(f"Đã trích xuất thành công từ {current_url}")
+            return {"content": content, "status": "ready_for_summary", "next": "coordinator"}
         
-        content = ""
-        if domain_key:
-            selectors = WEBSITE_SELECTORS[domain_key]
-            content_div = soup.select_one(selectors["content_selector"])
-            title_div = soup.select_one(selectors["title_selector"])
+        # Phương pháp 2: Phương pháp dự phòng sử dụng BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Tìm tất cả đoạn văn trong trang
+        all_paragraphs = soup.find_all('p')
+        paragraphs_text = [p.get_text(strip=True) for p in all_paragraphs if len(p.get_text(strip=True)) > 20]
+        
+        if len(paragraphs_text) >= 3:  # Ít nhất 3 đoạn có ý nghĩa
+            content = "\n\n".join(paragraphs_text)
+            content = remove_duplicated_content(content)
             
-            title = title_div.get_text(strip=True) if title_div else "Không có tiêu đề"
-            
-            if content_div:
-                # Loại bỏ các phần tử không cần thiết
-                for tag in content_div.find_all(['figure', 'div.image', 'script']):
-                    tag.decompose()
-                
-                # Trích xuất nội dung
-                paragraphs = content_div.find_all('p')
-                if paragraphs:
-                    content = "\n\n".join([p.get_text(strip=True) for p in paragraphs])
-                else:
-                    content = content_div.get_text(strip=True)
-                
-                content = f"Tiêu đề: {title}\n\n{content}"
+            if len(content) > 200:
+                print(f"Đã trích xuất thành công bằng phương pháp dự phòng từ {current_url}")
                 return {"content": content, "status": "ready_for_summary", "next": "coordinator"}
-            else:
-                return {"errors": state["errors"] + [f"Không thể trích xuất nội dung từ {current_url}"], "status": "error", "next": "coordinator"}
-        else:
-            # Logic mặc định cho các trang khác
-            title_tag = soup.find(['h1', 'h2.title'])
-            title = title_tag.get_text(strip=True) if title_tag else "Không có tiêu đề"
-            
-            article = soup.find(['article', 'div.content', 'div.article-content'])
-            if article:
-                for tag in article.find_all(['figure', 'div.image', 'script']):
-                    tag.decompose()
-                
-                paragraphs = article.find_all('p')
-                if paragraphs:
-                    content = "\n\n".join([p.get_text(strip=True) for p in paragraphs])
-                else:
-                    content = article.get_text(strip=True)
-                
-                content = f"Tiêu đề: {title}\n\n{content}"
-                return {"content": content, "status": "ready_for_summary", "next": "coordinator"}
-            else:
-                return {"errors": state["errors"] + [f"Không thể trích xuất nội dung từ {current_url}"], "status": "error", "next": "coordinator"}
+        
+        # Nếu trích xuất thất bại
+        return {"errors": state["errors"] + [f"Không thể trích xuất nội dung từ {current_url}"], "status": "error", "next": "coordinator"}
     
     except Exception as e:
         return {"errors": state["errors"] + [f"Lỗi khi crawl {current_url}: {str(e)}"], "status": "error", "next": "coordinator"}
