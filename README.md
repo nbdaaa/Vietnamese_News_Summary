@@ -103,7 +103,7 @@ You can modify the prompts and parameters for the OpenAI model in `agents/summar
 - **LangGraph**: Library for building multi-agent systems
 - **Gemini**: Large language model for summarization
 - **Trafilatura**: State-of-the-art open-source extractor (ACL 2021 paper).
-- ~~**BeautifulSoup**: HTML parsing library~~ (Not needed anymore)
+- ~~**BeautifulSoup**: HTML parsing library~~ (No needed anymore)
 
 ## Contributing
 
