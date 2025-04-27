@@ -7,14 +7,14 @@ AI Multi-agent system for crawling and summarizing articles from Vietnamese news
 This system uses LangChain and LangGraph to build a multi-agent system capable of:
 
 1. Crawling content from Vietnamese news websites
-2. Summarizing content using OpenAI GPT
-3. Saving results as a CSV file
+2. Summarizing content using LLM (In our project we use Gemini 2.0 Flash)
+3. Saving results as a CSV file with 2 columns: Origin crawl text and summarized text
 
 The system includes 4 main agents:
 - Coordinator Agent: Manages workflow
-- Crawler Agent: Collects content from news sites
-- Summarizer Agent: Summarizes content
-- Storage Agent: Stores results
+- Crawler Agent: Collects content from news sites and preprocessing data
+- Summarizer Agent: Summarizes content using LLM
+- Storage Agent: Stores results into data/output
 
 ## Requirements
 
