@@ -20,7 +20,7 @@ The system includes 4 main agents:
 
 - Python 3.8+
 - Conda (for environment management)
-- OpenAI API key
+- LLM key (Here is Gemini)
 
 ## Installation
 
@@ -71,6 +71,7 @@ news_summary_system/
 │   └── output/          # Output results
 ├── main.py              # Main execution file
 ├── environment.yml      # Conda environment configuration
+├── requirements.txt     # Requirement for the project
 └── README.md            # Documentation
 ```
 
@@ -92,20 +93,6 @@ Results will be saved in `data/output/news_summaries.csv`.
 
 ## Customization
 
-### Adding new websites:
-
-To add support for a new website, update the configuration in `config/settings.py`:
-
-```python
-WEBSITE_SELECTORS = {
-    "new-domain-name": {
-        "content_selector": "CSS selector for content section",
-        "title_selector": "CSS selector for title"
-    },
-    # ...
-}
-```
-
 ### Adjusting summarization logic:
 
 You can modify the prompts and parameters for the OpenAI model in `agents/summarizer.py`.
@@ -114,9 +101,9 @@ You can modify the prompts and parameters for the OpenAI model in `agents/summar
 
 - **LangChain**: Framework for LLM-based applications
 - **LangGraph**: Library for building multi-agent systems
-- **OpenAI GPT**: Large language model for summarization
-- **BeautifulSoup**: HTML parsing library
-- **Pandas**: Data processing
+- **Gemini**: Large language model for summarization
+- **Trafilatura**: State-of-the-art open-source extractor (ACL 2021 paper).
+- ~~**BeautifulSoup**: HTML parsing library~~ (Not needed anymore)
 
 ## Contributing
 
