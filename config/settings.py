@@ -1,7 +1,7 @@
 # config/settings.py
 
 # Cấu hình Google Gemini API
-GOOGLE_API_KEY = "AIzaSyDhEoZMZUtgwc4o_BYY7EI9hywIfWWOuvQ"  # Thay thế bằng API key thực của bạn
+GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"  # Thay thế bằng API key thực của bạn
 
 # Cấu hình hệ thống
 OUTPUT_FILE = "data/output/news_summaries.csv"
