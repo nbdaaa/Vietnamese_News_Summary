@@ -1,13 +1,13 @@
 # config/settings.py
 
 # Cấu hình Google Gemini API
-GOOGLE_API_KEY = "AIzaSyDhEoZMZUtgwc4o_BYY7EI9hywIfWWOuvQ"  # Thay thế bằng API key thực của bạn
+GOOGLE_API_KEY = "AIzaSyBuK8xVl6GYuEyN3PuTLRTqu81KCarwVFQ"  # Thay thế bằng API key thực của bạn
 
 # Cấu hình hệ thống
 OUTPUT_FILE = "data/output/news_summaries.csv"
 
 # Cấu hình crawling
-MAX_ARTICLES = 10000  # Số lượng bài báo tối đa cần crawl
+MAX_ARTICLES = 500  # Số lượng bài báo tối đa cần crawl
 CRAWL_DELAY = 1  # Thời gian chờ giữa các lần request (giây)
 BATCH_SIZE = 20 # Số lượng URL crawl song song
 

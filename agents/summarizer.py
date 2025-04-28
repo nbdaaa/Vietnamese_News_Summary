@@ -20,9 +20,9 @@ def summarize_with_retry(content: str) -> str:
     """Summarize content with retry mechanism"""
     prompt = ChatPromptTemplate.from_template(
         """Bạn là một chuyên gia tóm tắt bài báo Tiếng Việt.
-        Hãy tóm tắt nội dung sau đây một cách súc tích, giữ lại các thông tin quan trọng,
-        các sự kiện chính, và ý nghĩa của bài viết. Tóm tắt nên có độ dài khoảng 3-5 đoạn. 
-        Lưu ý: Đoạn tóm tắt không xuất hiện tên bài báo hay tên tác giả nào.
+        Hãy tóm tắt nội dung sau đây một cách ngắn gọn, súc tích, giữ lại các thông tin quan trọng,
+        các sự kiện chính, và ý nghĩa của bài viết. Chỉ nên tóm tắt bằng một đoạn văn bản duy nhất. 
+        Lưu ý: Không được bắt đầu bằng "Bài viết này nói về" hoặc "Bài viết này đề cập đến" hoặc cách nói khác tương tự.
         
         Nội dung:
         {content}
