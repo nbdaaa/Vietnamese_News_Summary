@@ -5,15 +5,31 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 from agents import NewsProcessingState
-from config.settings import LLM_MODEL, LLM_TEMPERATURE, GOOGLE_API_KEY
+from config.settings import LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, OPENAI_API_KEY, GOOGLE_API_KEY
+
+# Initialize correct LLM based on provider
+def initialize_llm():
+    if LLM_PROVIDER == "google":
+        # Google Gemini
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        return ChatGoogleGenerativeAI(
+            model=LLM_MODEL,
+            temperature=LLM_TEMPERATURE,
+            google_api_key=GOOGLE_API_KEY
+        )
+    elif LLM_PROVIDER == "openai":
+        # OpenAI
+        from langchain_openai import ChatOpenAI
+        return ChatOpenAI(
+            model=LLM_MODEL,
+            temperature=LLM_TEMPERATURE,
+            openai_api_key=OPENAI_API_KEY
+        )
+    else:
+        raise ValueError(f"Unsupported LLM provider: {LLM_PROVIDER}")
 
 # Initialize LLM
-from langchain_google_genai import ChatGoogleGenerativeAI
-llm = ChatGoogleGenerativeAI(
-    model=LLM_MODEL,
-    temperature=LLM_TEMPERATURE,
-    google_api_key=GOOGLE_API_KEY
-)
+llm = initialize_llm()
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def summarize_with_retry(content: str) -> str:
