@@ -2,7 +2,7 @@
 
 # Cấu hình Google Gemini API
 <<<<<<< HEAD
-GOOGLE_API_KEY = "AIzaSyBuK8xVl6GYuEyN3PuTLRTqu81KCarwVFQ"  # Thay thế bằng API key thực của bạn
+GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"  # Thay thế bằng API key thực của bạn
 =======
 GOOGLE_API_KEY = "YOUR_GEMINI_API_KEY"  # Thay thế bằng API key thực của bạn
 >>>>>>> d1e749068105837a08fec2e954d01c0f694c5542
