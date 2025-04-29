@@ -1,0 +1,15 @@
+# requirements.txt
+langchain>=0.0.267
+langchain-community>=0.0.10
+langchain-openai>=0.0.2
+langchain-google-genai>=0.0.1
+beautifulsoup4>=4.12.2
+requests>=2.31.0
+pandas>=2.0.3
+langchain-experimental>=0.0.6
+langchain_text_splitters>=0.0.1
+langgraph>=0.0.11
+aiohttp>=3.8.5
+tenacity>=8.2.3
+tqdm>=4.64.0
+trafilatura>=1.6.0
